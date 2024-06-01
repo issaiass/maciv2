@@ -1,35 +1,30 @@
-from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
-from launch_param_builder import load_xacro 
-from os.path import join 
-from pathlib import Path
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, ExecuteProcess
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+from os.path import join
+from launch.substitutions import Command
 
+
+"""
+Basic gazebo world loading. 
+"""
 def generate_launch_description():
 
-
+    # Start a simulation with the cafe world
     path = join(get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py")    
-    gazebo_sim = IncludeLaunchDescription(path, launch_arguments=[("gz_args", "empty.sdf")])
+    gazebo_sim = IncludeLaunchDescription(path, launch_arguments=[("gz_args",  "empty.sdf")])
 
-    robot = ExecuteProcess(
-        cmd="ros2 run ros_gz_sim create -topic robot_description -z 1.0".split(),
-        name="spawn robot",
-        output="both"
-    )
+    # Gazebo Bridge: This brings data (sensors/clock) out of gazebo into ROS.
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'
+                   ],
+        output='screen'        )
 
-    robot_file = join(get_package_share_directory("maciv2"), "robot_description", "maciv2.urdf.xacro")
-    robot_xml = load_xacro(Path(robot_file))
+    maciv2 = IncludeLaunchDescription(join(get_package_share_directory("maciv2"), "launch","spawn_maciv2.launch.py"))
+    moveit = IncludeLaunchDescription(join(get_package_share_directory("maciv2"), "launch","moveit.launch.py"))
 
 
-    robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        name='robot_state_publisher',
-        output='both',
-        parameters=[{'robot_description':robot_xml, 
-                     'use_sim_time':True}],
-        #namespace="/maciv2"
-    )
-
-    return LaunchDescription([gazebo_sim, robot, robot_state_publisher])
+    return LaunchDescription([gazebo_sim, bridge, maciv2, moveit])
