@@ -33,8 +33,8 @@ setup(
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
-    entry_points={
-        'console_scripts': [
-        ],
-    },
+    entry_points={'console_scripts': [
+        "simple = maciv2.simple:main",
+        "gripper = maciv2.maciv2:main"],
+                 },
 )
