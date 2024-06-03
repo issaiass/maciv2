@@ -13,15 +13,18 @@ def generate_launch_description():
 
     # Start a simulation with the cafe world
     path = join(get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py")    
-    gazebo_sim = IncludeLaunchDescription(path, launch_arguments=[("gz_args",  "empty.sdf")])
+    coke_world = join(get_package_share_directory("maciv2"), "models", "cokeworld.sdf")
+    gazebo_sim = IncludeLaunchDescription(path, launch_arguments=[("gz_args",  coke_world)])
 
     # Gazebo Bridge: This brings data (sensors/clock) out of gazebo into ROS.
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'
+        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+                   '/realsense/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked',
                    ],
-        output='screen'        )
+        output='screen'
+        )
 
     maciv2 = IncludeLaunchDescription(join(get_package_share_directory("maciv2"), "launch","spawn_maciv2.launch.py"))
     moveit = IncludeLaunchDescription(join(get_package_share_directory("maciv2"), "launch","moveit.launch.py"))
