@@ -36,6 +36,7 @@ setup(
     entry_points={'console_scripts': [
         "simple = maciv2.simple:main",
         "gripper = maciv2.maciv2:main",
-        "gripperpymoveit = maciv2.maciv2pymoveit:main"],
+        "gripperpymoveit = maciv2.maciv2pymoveit:main",
+        "picknplace = maciv2.maciv2cokecan:main",],
                  },
 )
